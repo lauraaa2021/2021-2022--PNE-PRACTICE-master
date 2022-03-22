@@ -1,4 +1,5 @@
 import socket
+from Seq1 import Seq
 
 # -- Step 1: create the socket
 ls = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,8 +61,7 @@ while True:
 
         if cmd != "PING":
             arg = splitted_command[1]
-
-
+            print(arg)
 
         # -- Print the received message
         print(f"Message received: {msg}")
@@ -74,11 +74,15 @@ while True:
         elif cmd == "GET":
             seq_list = ["ACGTCT", "GGGGTTTC", "ACTACTAG"," ATGCTGCT", "GCTCCCC"]
             response = seq_list[int(arg)]
-        elif cmd == "INFO":
+            print(response)
 
+        elif cmd == "INFO":
+            response = Seq(arg).percentages()
+            response_1 = Seq(arg).count_base()
+            response = str(response) + str(response_1)
 
         else:
-            response = "HELLO. I am the Happy Server :-)\n"
+            response = "Hello from happy server"
 
 
 
