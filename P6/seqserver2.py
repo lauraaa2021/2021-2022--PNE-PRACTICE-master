@@ -36,7 +36,12 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
         try:
             if routes == "/":
                 # This new contents are written in HTML language
-                contents = pathlib.Path("html/index.html").read_text()
+                contents = pathlib.Path("html/form-1.html").read_text()
+            elif routes == "/ping?":
+                contents = pathlib.Path("html/ping.html").read_text()
+            elif routes == "/get?":
+                contents = pathlib.Path("html/get.html").read_text()
+
 
             else:
                 filename = routes[1:]
