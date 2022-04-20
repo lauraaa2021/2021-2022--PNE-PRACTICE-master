@@ -97,3 +97,6 @@ with socketserver.TCPServer(("", PORT), Handler) as httpd:
         print("")
         print("Stoped by the user")
         httpd.server_close()
+
+
+    #when passing the string to the html file if we have done that we will get the results in the same line, if we try to add /n we will get everything still in the same line we will need <br> and we can use also <p>
