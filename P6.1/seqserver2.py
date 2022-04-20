@@ -1,8 +1,20 @@
 import http.server
 import socketserver
 import termcolor
-import pathlib
+from pathlib import Path
+import jinja2 as j
+from urllib.parse import parse_qs, urlparse
 from Seq1 import Seq
+import pathlib
+
+HTML_FOLDER = "./html/"
+LIST_SEQUENCES = ["ACGACTCGACTCGA", "CAGTCATCTCA", "CAGACTAAGCGCGGG", "CGACGACAGCAGCAT", "AGACGACAGAT"]
+LIST_GENES = ["U5", "ADA", "FRAT1", "RNU6_269P", "FXN"]
+def read_html_file(filename):  #to open the file
+    contents = Path(HTML_FOLDER + filename).read_text()
+    contents = j.Template(contents)                # we return the info as a template of jinja and not a s simple string
+    return contents                                            #to open the file
+
 
 # Define the Server's port
 PORT = 8080
@@ -19,42 +31,33 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
         """This method is called whenever the client invokes the GET method
         in the HTTP protocol request"""
 
-        # We just print a message
-        print("GET received! Request line:")
+
 
         # Print the request line
         termcolor.cprint("  " + self.requestline, 'green')
 
-        # Print the command received (should be GET)
-        print("  Command: " + self.command)
+        url_path = urlparse(self.path)
+        path = url_path.path
+        arguments= parse_qs(url_path.query)
+        print("The old path was", self.path)
+        print("The new path is", url_path.path)
+        print("arguments", arguments)
+        if self.path == "/":
+            # This new contents are written in HTML language
+            contents = read_html_file("index.html").render(context={"n_sequences": len(LIST_SEQUENCES),
+                                                                    "genes": LIST_GENES})
+        elif path == "/ping":
+            contents = read_html_file(path[1:] + ".html").render()   #this is how we extract the path
+        elif path == "/get":
+            n_sequence = int(arguments["n_sequence"][0])
+            sequence = LIST_SEQUENCES[n_sequence]
+            contents = read_html_file(path[1:] + ".html").render(context={"n_sequence": n_sequence, "sequence": sequence}
+        elif path == "/gene":
+            contents = read_html_file(path[1:] + ".html").render(context={"n_sequence": n_sequence, "sequence": sequence}
 
-        # Print the resource requested (the path)
-        print("  Path: " + self.path)
+        else:
+            contents = "I am the happy server"
 
-        routes = self.requestline.split(" ")[1]
-        # Message to send back to the clinet
-        try:
-            if routes == "/":
-                # This new contents are written in HTML language
-                contents = pathlib.Path("html/form-1.html").read_text()
-            elif routes == "/ping?":
-                contents = pathlib.Path("html/ping.html").read_text()
-            elif routes.startswith("/get?"):
-                seq_list = ["ACGACTCGACTCGA", "CAGTCATCTCA", "CAGACTAAGCGCGGG", "CGACGACAGCAGCAT", "AGACGACAGAT"]
-                index = int(routes.split("=")[1])
-                print(index)
-                contents = pathlib.Path("html/get.html").read_text().format(seq=index, seq_1=seq_list[index])
-            elif routes.startswith("/gene?"):
-                index = routes.split("=")[1]
-                print(index)
-                sequence = Seq()
-                sequence.read_fasta(index)
-                contents = pathlib.Path("html/gene.html").read_text().format(seq=index, seq_1=sequence)
-            else:
-                filename = routes[1:]
-                contents = pathlib.Path("html/" + filename + ".html").read_text()
-        except:
-            contents = pathlib.Path("html/error.html").read_text()
 
         # Generating the response message
         self.send_response(200)  # -- Status line: OK!
